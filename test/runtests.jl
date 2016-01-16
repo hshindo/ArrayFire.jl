@@ -4,8 +4,8 @@ using Cxx
 using ArrayFire
 using Base.Test
 
-r = rand(AFArray{Float32}, 10, 5)
-ArrayFire.size(r)
+x = ArrayFire.rand(Float32, 10, 5)
+
 
 # write your own tests here
 @test 1 == 1
