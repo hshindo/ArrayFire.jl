@@ -2,6 +2,7 @@ module ArrayFire
 
 using Cxx
 export AFArray
+export to_host
 
 addHeaderDir("/usr/local/include", kind=C_System)
 Libdl.dlopen("/usr/local/lib/libaf.so", Libdl.RTLD_GLOBAL)

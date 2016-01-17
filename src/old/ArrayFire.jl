@@ -7,7 +7,7 @@ using Cxx
 import Cxx: CppEnum
 
 addHeaderDir("/usr/local/include", kind=C_System)
-Libdl.dlopen("/usr/local/lib/libaf.so", Libdl.RTLD_GLOBAL)
+Libdl.dlopen("/usr/local/lib/libafcpu.so", Libdl.RTLD_GLOBAL)
 cxxinclude("arrayfire.h")
 
 setDevice(i) = icxx"af::setDevice($i);"

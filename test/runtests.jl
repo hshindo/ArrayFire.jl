@@ -4,8 +4,7 @@ using Cxx
 using ArrayFire
 using Base.Test
 
-x = ArrayFire.rand(Float32, 10, 5)
-
+include("wrap.jl")
 
 # write your own tests here
 @test 1 == 1
