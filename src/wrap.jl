@@ -55,6 +55,7 @@ rewriter(arg) = arg
 
 context=wrap_c.init(output_file="libaf.jl",
                     common_file="types.jl",
+                    header_library=x->"libaf",
                     headers = headers,
                     clang_includes=includes,
                     header_wrapped=(x,y)->contains(y,"af"),

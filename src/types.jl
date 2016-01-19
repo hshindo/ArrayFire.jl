@@ -1,18 +1,18 @@
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-using Compat
+#using Compat
 
 # Skipping MacroDefinition: AFAPI __attribute__ ( ( visibility ( "default" ) ) )
 
-const SIZE_T_FRMT_SPECIFIER = "%zu"
+#const SIZE_T_FRMT_SPECIFIER = "%zu"
 
 # Skipping MacroDefinition: DEPRECATED ( msg ) __attribute__ ( ( deprecated ) )
 
-const AF_VERSION = "3.2.2"
-const AF_VERSION_MAJOR = 3
-const AF_VERSION_MINOR = 2
-const AF_VERSION_PATCH = 2
-const AF_API_VERSION = AF_API_VERSION_CURRENT
+#const AF_VERSION = "3.2.2"
+#const AF_VERSION_MAJOR = 3
+#const AF_VERSION_MINOR = 2
+#const AF_VERSION_PATCH = 2
+#const AF_API_VERSION = AF_API_VERSION_CURRENT
 const AF_MAX_DIMS = 4
 
 typealias dim_t Clonglong
