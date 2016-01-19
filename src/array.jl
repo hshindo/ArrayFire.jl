@@ -1,4 +1,4 @@
-type AFArray{T,N}
+immutable AFArray{T,N}
   ptr
 end
 
@@ -6,8 +6,9 @@ function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
   a = af_array[0]
   dims = dim_t[dims...]
   af_create_handle(a, N, dims, dtype(T))
-  finalizer(a, )
-  AFArray{T,N}(a[1])
+  afa = AFArray{T,N}(a[1])
+  finalizer(afa, release)
+  afa
 end
 AFArray{T}(::Type{T}, dims...) = AFArray(T, dims)
 
@@ -45,25 +46,11 @@ end
 
 eltype{T}(a::AFArray{T}) = T
 
-
 function to_host{T,N}(a::AFArray{T,N})
   ret = Array(T, size(a))
   af_get_data_ptr(pointer(ret), a.ptr)
   ret
 end
-
-function free(a::AFArray)
-  af_free_device(a.ptr)
-end
-
-#function free{T}(p::CudaPtr{T})
-#    cnull = unsafe_convert(Ptr{T}, C_NULL)
-#    if p.ptr != cnull && haskey(cuda_ptrs, p)
-#        delete!(cuda_ptrs, p)
-#        rt.cudaFree(p)
-#        p.ptr = cnull
-#    end
-#end
 
 function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   out = af_array[0]
@@ -82,3 +69,19 @@ function randn{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   AFArray{T,N}(out[1])
 end
 randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
+
+release(a::AFArray) = af_release_array(a.ptr)
+
+function refcount(a::AFArray)
+  count = Int32[0]
+  af_get_data_ref_count(count, a.ptr)
+  count[1]
+end
+
+#####
+function cat{T,N}(dim::Int, inputs::Vector{AFArray{T,N}})
+  out = af_array[0]
+  af_join_many(out, dim, length(inputs), inputs)
+  AFArray{T,N}(out[1])
+end
+
