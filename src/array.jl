@@ -1,14 +1,14 @@
-immutable AFArray{T,N}
-  ptr
+type AFArray{T,N}
+  ptr::Ptr{Void}
 end
 
 function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
-  a = af_array[0]
+  p = af_array[0]
   dims = dim_t[dims...]
-  af_create_handle(a, N, dims, dtype(T))
-  afa = AFArray{T,N}(a[1])
-  finalizer(afa, release)
-  afa
+  af_create_handle(p, N, dims, dtype(T))
+  a = AFArray{T,N}(p[1])
+  finalizer(a, release)
+  a
 end
 AFArray{T}(::Type{T}, dims...) = AFArray(T, dims)
 
@@ -38,13 +38,16 @@ function length(a::AFArray)
   elems[1]
 end
 
-function ndims(a::AFArray)
+eltype{T}(a::AFArray{T}) = T
+ndims{_,N}(a::AFArray{_,N}) = N
+
+function numdims(ptr::af_array)
   result = UInt32[0]
-  af_get_numdims(result, a.ptr)
+  af_get_numdims(result, ptr)
   Int(result[1])
 end
 
-eltype{T}(a::AFArray{T}) = T
+similar{T,N}(a::AFArray{T,N}) = AFArray(T, size(a))
 
 function to_host{T,N}(a::AFArray{T,N})
   ret = Array(T, size(a))
@@ -56,8 +59,9 @@ function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
   af_randu(out, length(dims), dims, dtype(T))
-  #finalizer(out, free)
-  AFArray{T,N}(out[1])
+  a = AFArray{T,N}(out[1])
+  finalizer(a, release)
+  a
 end
 rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
 
@@ -65,8 +69,9 @@ function randn{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
   af_randn(out, length(dims), dims, dtype(T))
-  #finalizer(out, free)
-  AFArray{T,N}(out[1])
+  a = AFArray{T,N}(out[1])
+  finalizer(out, release)
+  a
 end
 randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
 
@@ -78,10 +83,37 @@ function refcount(a::AFArray)
   count[1]
 end
 
-#####
 function cat{T,N}(dim::Int, inputs::Vector{AFArray{T,N}})
   out = af_array[0]
-  af_join_many(out, dim, length(inputs), inputs)
+  xs = map(x -> x.ptr, inputs)
+  af_join_many(out, dim, length(inputs), xs)
+  a = AFArray{T,N}(out[1])
+  finalizer(a, release)
+  a
+end
+
+"TODO: make AF_MAT_NONE variable"
+function dot{T,N}(x::AFArray{T,N}, y::AFArray{T,N})
+  out = af_array[0]
+  af_dot(out, x.ptr, y.ptr, AF_MAT_NONE, AF_MAT_NONE)
   AFArray{T,N}(out[1])
 end
 
+function mult{T}(A::AFArray{T,2}, B::AFArray{T,2}; tA=AF_MAT_NONE, tB=AF_MAT_NONE)
+  out = af_array[0]
+  af_matmul(out, A.ptr, B.ptr, tA, tB)
+  AFArray{T,2}(out[1])
+end
+*(A::AFArray, B::AFArray) = mult(A, B)
+multNT(A, B) = mult(A, B, AF_MAT_NONE, AF_MAT_TRANS)
+multTN(A, B) = mult(A, B, AF_MAT_TRANS, AF_MAT_NONE)
+multTT(A, B) = mult(A, B, AF_MAT_TRANS, AF_MAT_TRANS)
+
+function device_mem_info(a::AFArray)
+  alloc_bytes = Csize_t[0]
+  alloc_buffers = Csize_t[0]
+  lock_bytes = Csize_t[0]
+  lock_buffers = Csize_t[0]
+  af_device_mem_info(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers)
+  Int(alloc_bytes[1]), Int(alloc_buffers[1]), Int(lock_bytes[1]), Int(lock_buffers[1])
+end

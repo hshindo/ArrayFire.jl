@@ -1,8 +1,9 @@
 module ArrayFire
 
 export
-  AFArray, device_info
-import Base: show, length, size, ndims, rand, randn
+  AFArray, mult, multNN, multNT, multTN, multTT, device_mem_info
+
+import Base: show, length, size, ndims, rand, randn, cat, dot, *, +, -, similar
 
 @windows? (
 begin
@@ -36,5 +37,6 @@ end
 include("libaf.jl")
 
 include("array.jl")
+include("math.jl")
 
 end

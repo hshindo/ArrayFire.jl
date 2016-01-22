@@ -3,19 +3,14 @@ workspace()
 using ArrayFire
 using Base.Test
 
-a = AFArray(Float32, 100, 100, 30)
-ArrayFire.refcount(a)
-a = 1
-gc()
+x1 = rand(AFArray{Float32}, 10, 5)
+x2 = rand(AFArray{Float32}, 10, 5)
+cat(2, [x1,x2])
 
+tests = ["array"]
 
-function bench()
-  for i = 1:1000
-    a = AFArray(Float32, 100, 100, 30)
-  end
+for t in tests
+    path = joinpath(dirname(@__FILE__), "$t.jl")
+    println("$path ...")
+    include(path)
 end
-gc()
-@time bench()
-
-# write your own tests here
-@test 1 == 1
