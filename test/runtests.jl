@@ -3,9 +3,15 @@ workspace()
 using ArrayFire
 using Base.Test
 
+x1 = rand(10, 2)
+x2 = rand(10, 2)
+x1 + x2
+
 x1 = rand(AFArray{Float32}, 10, 5)
+
+
 x2 = rand(AFArray{Float32}, 10, 5)
-cat(2, [x1,x2])
+cat(0, [x1,x2])
 
 tests = ["array"]
 

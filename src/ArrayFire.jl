@@ -1,9 +1,9 @@
 module ArrayFire
 
-export
-  AFArray, mult, multNN, multNT, multTN, multTT, device_mem_info
+export AFArray, AFVector, AFMatrix
+export matmul, matmulNT, matmulTN, matmulTT, device_mem_info, lookup
 
-import Base: show, length, size, ndims, rand, randn, cat, dot, *, +, -, similar
+import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar
 
 @windows? (
 begin

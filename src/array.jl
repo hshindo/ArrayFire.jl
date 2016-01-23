@@ -2,6 +2,9 @@ type AFArray{T,N}
   ptr::Ptr{Void}
 end
 
+typealias AFVector{T} AFArray{T,1}
+typealias AFMatrix{T} AFArray{T,2}
+
 function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
   p = af_array[0]
   dims = dim_t[dims...]
@@ -12,16 +15,26 @@ function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
 end
 AFArray{T}(::Type{T}, dims...) = AFArray(T, dims)
 
-show(io::IO, a::AFArray) = show(io, to_host(a))
-
-function device_info()
-  name = UInt8[0,0,0,0,0,0,0,0,0,0]
-  platform = UInt8[0,0,0,0,0,0,0,0,0,0]
-  toolkit = UInt8[0,0,0,0,0,0,0,0,0,0]
-  compute = UInt8[0,0,0,0,0,0,0,0,0,0]
-  af_device_info(name, platform, toolkit, compute)
-  convert(ASCIIString, compute)
+function AFArray{T,N}(::Type{T}, value::Float64, dims::NTuple{N,Int})
+  p = af_array[0]
+  dims = dim_t[dims...]
+  af_constant(p, value, N, dims, dtype(T))
+  a = AFArray{T,N}(p[1])
+  finalizer(a, release)
+  a
 end
+AFArray{T}(::Type{T}, value::Float64, dims...) = AFArray(T, value, dims)
+
+function AFArray{T,N}(data::Array{T,N})
+  p = af_array[0]
+  dims = dim_t[size(data)...]
+  af_create_array(p, data, N, dims, dtype(T))
+  a = AFArray{T,N}(p[1])
+  finalizer(a, release)
+  a
+end
+
+show(io::IO, a::AFArray) = show(io, to_host(a))
 
 function size{_,N}(a::AFArray{_,N})
   dims = dim_t[0, 0, 0, 0]
@@ -84,36 +97,29 @@ function refcount(a::AFArray)
 end
 
 function cat{T,N}(dim::Int, inputs::Vector{AFArray{T,N}})
+  (dim > 0 && dim <= N) || error("Invalid dimension: $dim.")
   out = af_array[0]
   xs = map(x -> x.ptr, inputs)
-  af_join_many(out, dim, length(inputs), xs)
+  af_join_many(out, dim-1, length(inputs), xs)
   a = AFArray{T,N}(out[1])
   finalizer(a, release)
   a
 end
 
-"TODO: make AF_MAT_NONE variable"
-function dot{T,N}(x::AFArray{T,N}, y::AFArray{T,N})
-  out = af_array[0]
-  af_dot(out, x.ptr, y.ptr, AF_MAT_NONE, AF_MAT_NONE)
-  AFArray{T,N}(out[1])
+##### assignment
+function lookup(a::AFArray, indices::AFArray, dim::Int)
+  p = af_array[0]
+  af_lookup(p, a, indices, dim)
+  a = AFArray{T,N}(p[1])
+  finalizer(a, release)
+  a
 end
 
-function mult{T}(A::AFArray{T,2}, B::AFArray{T,2}; tA=AF_MAT_NONE, tB=AF_MAT_NONE)
-  out = af_array[0]
-  af_matmul(out, A.ptr, B.ptr, tA, tB)
-  AFArray{T,2}(out[1])
-end
-*(A::AFArray, B::AFArray) = mult(A, B)
-multNT(A, B) = mult(A, B, AF_MAT_NONE, AF_MAT_TRANS)
-multTN(A, B) = mult(A, B, AF_MAT_TRANS, AF_MAT_NONE)
-multTT(A, B) = mult(A, B, AF_MAT_TRANS, AF_MAT_TRANS)
-
-function device_mem_info(a::AFArray)
-  alloc_bytes = Csize_t[0]
-  alloc_buffers = Csize_t[0]
-  lock_bytes = Csize_t[0]
-  lock_buffers = Csize_t[0]
-  af_device_mem_info(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers)
-  Int(alloc_bytes[1]), Int(alloc_buffers[1]), Int(lock_bytes[1]), Int(lock_buffers[1])
-end
+##### Functions to create and modify Arrays #####
+#af_copy_array
+#af_get_data_ref_count
+#af_write_array
+#af_get_data_ptr
+#af_release_array
+#af_retain_array
+#af_eval
