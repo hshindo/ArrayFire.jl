@@ -1,9 +1,10 @@
 module ArrayFire
 
 export AFArray, AFVector, AFMatrix
-export matmul, matmulNT, matmulTN, matmulTT, device_mem_info, lookup
+export matmul, matmulNT, matmulTN, matmulTT, lookup, af_length
+export device_ptr, device_mem_info
 
-import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar
+import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar, lock, unlock
 
 @windows? (
 begin
@@ -37,6 +38,7 @@ end
 include("libaf.jl")
 
 include("array.jl")
+include("device.jl")
 include("math.jl")
 
 end
