@@ -4,12 +4,13 @@ using ArrayFire
 using Base.Test
 
 x = rand(AFArray{Float32}, 10, 5, 2, 3)
+device_info()
 
 function bench()
   x = rand(AFArray{Float32}, 10, 5, 2, 3)
   for i = 1:10000
     #x = rand(AFArray{Float32}, 100, 10, 10)
-    a = length(x)
+    a = af_length(x)
     #unlock(x)
   end
 end
