@@ -85,17 +85,14 @@ function retain{T,N}(a::AFArray{T,N})
   AFArray{T,N}(p[1])
 end
 
-function write(a::AFArray, data)
-  error("Not implemented yet.")
-  #af_write_array
-end
+#af_write_array
 
 ##### Functions to create arrays. #####
 
 function eye{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   p = af_array[0]
   dims = dim_t[dims...]
-  af_identity(p, length(dims), dims, dtype(T))
+  af_identity(p, N, dims, dtype(T))
   AFArray{T,N}(p[1])
 end
 eye{T}(::Type{AFArray{T}}, dims...) = eye(T, dims)
@@ -104,14 +101,14 @@ function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int}
   p = af_array[0]
   dims = dim_t[dims...]
   tdims = dim_t[tdims...]
-  af_iota(p, length(dims), dims, length(tdims), tdims, dtype(T))
+  af_iota(p, N, dims, N, tdims, dtype(T))
   AFArray{T,N}(p[1])
 end
 
 function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   p = af_array[0]
   dims = dim_t[dims...]
-  af_randu(p, length(dims), dims, dtype(T))
+  af_randu(p, N, dims, dtype(T))
   AFArray{T,N}(p[1])
 end
 rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
@@ -119,7 +116,7 @@ rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
 function randn{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   p = af_array[0]
   dims = dim_t[dims...]
-  af_randn(p, length(dims), dims, dtype(T))
+  af_randn(p, N, dims, dtype(T))
   AFArray{T,N}(p[1])
 end
 randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
@@ -127,7 +124,7 @@ randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
 function range{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, seqdim::Int)
   p = af_array[0]
   dims = dim_t[dims...]
-  af_range(p, length(dims), dims, seqdim, dtype(T))
+  af_range(p, N, dims, seqdim, dtype(T))
   AFArray{T,N}(p[1])
 end
 
@@ -139,14 +136,82 @@ function cast{T,U}(a::AFArray{T}, ::Type{U})
   AFArray{T,N}(p[1])
 end
 
-##### others
+##### Move and Reorder array content. #####
 
-function cat{T,N}(dim::Int, inputs::Vector{AFArray{T,N}})
-  (dim > 0 && dim <= N) || error("Invalid dimension: $dim.")
-  out = af_array[0]
-  xs = map(x -> x.ptr, inputs)
-  af_join_many(out, dim-1, length(inputs), xs)
-  AFArray{T,N}(out[1])
+function vec{T,N}(a::AFArray{T,N})
+  p = af_array[0]
+  af_flat(p, a.ptr)
+  AFArray{T,1}(p[1])
+end
+
+function flip{T,N}(a::AFArray{T,N}, dim::Int)
+  (0 < dim <= N) || error("Invalid dimension: $(dim).")
+  p = af_array[0]
+  af_flip(p, a.ptr, dim-1)
+  AFArray{T,N}(p[1])
+end
+
+function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
+  (0 < dim <= N) || error("Invalid dimension: $(dim).")
+  p = af_array[0]
+  ps = map(a -> a.ptr, as)
+  af_join_many(p, dim-1, length(ps), ps)
+  AFArray{T,N}(p[1])
+end
+#cat{T,N}(dim::Int, as::AFArray{T,N}...) = cat(dim, AFArray[as...])
+
+function reshape{T,N}(a::AFArray{T}, dims::NTuple{N,Int})
+  p = af_array[0]
+  dims = dim_t[dims...]
+  af_moddims(p, a.ptr, N, dims)
+  AFArray{T,N}(p[1])
+end
+reshape{T}(a::AFArray{T}, dims...) = reshape(a, dims)
+
+function reorder{T,N}(a::AFArray{T,N}, x::Int, y::Int, z::Int, w::Int)
+  p = af_array[0]
+  af_reorder(p, a.ptr, Cuint(x), Cuint(y), Cuint(z), Cuint(w))
+  AFArray{T,N}(p[1])
+end
+
+# af_replace
+# af_select
+
+function shift{T,N}(a::AFArray{T,N})
+  # af_shift
+  error("Not implemented yet.")
+end
+
+function tile{T,N}(a::AFArray{T,N})
+  # af_tile
+  error("Not implemented yet.")
+end
+
+function transpose{T}(a::AFMatrix{T}; conjugate::Bool=false)
+  p = af_array[0]
+  af_transpose(p, a.ptr, conjugate)
+  AFArray{T,2}(p[1])
+end
+
+# af_transpose_inplace
+
+##### Unified API Functions #####
+
+function available_backends()
+  p = Cint[0]
+  af_get_available_backends(p)
+  b = p[1]
+  cpu = b & AF_BACKEND_CPU
+  cuda = b & AF_BACKEND_CUDA
+  opencl = b & AF_BACKEND_OPENCL
+  cpu, cuda, opencl
+end
+
+# af_get_backend_count
+# af_get_backend_id
+
+function setbackend(backend)
+  af_set_backend(backend)
 end
 
 ##### assignment

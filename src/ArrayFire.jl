@@ -1,10 +1,10 @@
 module ArrayFire
 
 export AFArray, AFVector, AFMatrix
-export matmul, matmulNT, matmulTN, matmulTT, lookup, device_info
+export matmul, matmulNT, matmulTN, matmulTT, lookup, device_info, flat
 export device_ptr, device_mem_info
 
-import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar, lock, unlock
+import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar, lock, unlock, transpose, transpose!
 
 @windows? (
 begin

@@ -3,8 +3,11 @@ workspace()
 using ArrayFire
 using Base.Test
 
-x = rand(AFArray{Float32}, 10, 5, 2, 3)
-device_info()
+ArrayFire.available_backends()
+
+x = rand(AFArray{Float32}, 10, 5)
+transpose!(x)
+ArrayFire.reshape(x, (100,3))
 
 function bench()
   x = rand(AFArray{Float32}, 10, 5, 2, 3)
@@ -17,7 +20,6 @@ end
 gc()
 @time bench()
 
-Float64
 x1 = AFArray(Float32, 1.0, (10, 5))
 x1 = rand(AFArray{Float32}, 10, 5)
 x2 = rand(AFArray{Float32}, 10, 5)
