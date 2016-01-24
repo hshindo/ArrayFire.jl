@@ -1,7 +1,7 @@
 module ArrayFire
 
 export AFArray, AFVector, AFMatrix
-export matmul, matmulNT, matmulTN, matmulTT, lookup, af_length
+export matmul, matmulNT, matmulTN, matmulTT, lookup, device_info
 export device_ptr, device_mem_info
 
 import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar, lock, unlock
