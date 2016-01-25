@@ -16,7 +16,7 @@ end
 
 function device_ptr(a::AFArray)
   p = Ptr{Void}[0]
-  af_get_device_ptr(p, a.ptr)
+  af_get_device_ptr(p, a)
   p[1]
 end
 
@@ -26,13 +26,13 @@ function mem_stepsize()
   Int(p[1])
 end
 
-lock(a::AFArray) = af_lock_device_ptr(a.ptr)
+lock(a::AFArray) = af_lock_device_ptr(a)
 
-unlock(a::AFArray) = af_unlock_device_ptr(a.ptr)
+unlock(a::AFArray) = af_unlock_device_ptr(a)
 
 set_mem_stepsize(bytes::Int) = af_set_mem_step_size(bytes)
 
-free(a::AFArray) = af_free_device(a.ptr)
+free(a::AFArray) = af_free_device(a)
 
 function device_count()
   p = Cint[0]

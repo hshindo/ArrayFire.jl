@@ -6,7 +6,7 @@ using Base.Test
 ArrayFire.available_backends()
 
 x = rand(AFArray{Float32}, 10, 5)
-transpose!(x)
+ArrayFire.refcount(x)
 ArrayFire.reshape(x, (100,3))
 
 function bench()
