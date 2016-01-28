@@ -3,11 +3,13 @@ module ArrayFire
 export AFArray, AFVector, AFMatrix
 export matmul, matmulNT, matmulTN, matmulTT, lookup, device_info, flat
 export device_ptr, device_mem_info, cat_many
+export arg
 
 import Base:
   show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, ⋅,
   similar, lock, unlock, transpose, transpose!, unsafe_convert, fill,
-  exp, expm1, log, log10, log1p, sqrt
+  exp, expm1, log, log10, log1p, sqrt, tanh, abs, ceil, floor, round, sign, trunc,
+  cumsum
 
 @windows? (
 begin
@@ -32,6 +34,15 @@ dtype(::Type{UInt64}) = u64
 dtype(::Type{Int16}) = s16
 dtype(::Type{UInt16}) = u16
 
+jltypes = begin
+  d = Dict()
+  for T in [Float32,Complex{Float32},Float64,Complex{Float64},Bool,Int32,UInt32,UInt8,Int64,UInt64,Int16,UInt16]
+    d[dtype(T)] = T
+  end
+  d
+end
+
+
 function checkerror(err)
   if err != AF_SUCCESS
     throw(err)
@@ -43,5 +54,6 @@ include("libaf.jl")
 include("array.jl")
 include("device.jl")
 include("math.jl")
+include("vector.jl")
 
 end

@@ -49,7 +49,15 @@ for (fname, afname) in [(:exp, :af_exp),
                         (:log, :af_log),
                         (:log10, :af_log10),
                         (:log1p, :af_log1p),
-                        (:sqrt, :af_sqrt)]
+                        (:sqrt, :af_sqrt),
+                        (:tanh, :af_tanh),
+                        (:abs, :af_abs),
+                        (:arg, :af_arg),
+                        (:ceil, :af_ceil),
+                        (:floor, :af_floor),
+                        (:round, :af_round),
+                        (:sign, :af_sign),
+                        (:trunc, :af_trunc)]
   @eval begin
     function $(fname){T,N}(a::AFArray{T,N})
       out = af_array[0]
@@ -58,3 +66,5 @@ for (fname, afname) in [(:exp, :af_exp),
     end
   end
 end
+
+##### Numeric functions #####

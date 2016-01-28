@@ -45,6 +45,11 @@ function length(a::AFArray)
   Int(p[1])
 end
 
+function af_eltype(a::af_array)
+  out = af_dtype[0]
+  af_get_type(out, a)
+  jltypes[out[1]]
+end
 eltype{T}(a::AFArray{T}) = T
 
 function af_ndims(a::af_array)
