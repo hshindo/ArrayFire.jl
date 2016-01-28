@@ -21,14 +21,6 @@ function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
 end
 AFArray{T}(::Type{T}, dims...) = AFArray(T, dims)
 
-function AFArray{T,N}(::Type{T}, value::Float64, dims::NTuple{N,Int})
-  p = af_array[0]
-  dims = dim_t[dims...]
-  af_constant(p, value, N, dims, dtype(T))
-  AFArray{T,N}(p[1])
-end
-AFArray{T}(::Type{T}, value::Float64, dims...) = AFArray(T, value, dims)
-
 function AFArray{T,N}(data::Array{T,N})
   p = af_array[0]
   dims = dim_t[size(data)...]
@@ -104,6 +96,13 @@ function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int}
   dims = dim_t[dims...]
   tdims = dim_t[tdims...]
   af_iota(p, N, dims, N, tdims, dtype(T))
+  AFArray{T,N}(p[1])
+end
+
+function fill{T,N}(value::T, dims::NTuple{N,Int})
+  p = af_array[0]
+  dims = dim_t[dims...]
+  af_constant(p, value, N, dims, dtype(T))
   AFArray{T,N}(p[1])
 end
 
