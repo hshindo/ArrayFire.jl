@@ -13,7 +13,7 @@ end
 function .*{T}(lhs::AFArray{T}, rhs::AFArray{T})
   out = af_array[0]
   af_mul(out, lhs, rhs, true)
-  N = ndims(out[1])
+  N = af_ndims(out[1])
   AFArray{T,N}(out[1])
 end
 
@@ -32,7 +32,7 @@ function dot{T,N}(lhs::AFArray{T,N}, rhs::AFArray{T,N})
   af_dot(out, lhs, rhs, AF_MAT_NONE, AF_MAT_NONE)
   AFArray{T,N}(out[1])
 end
-⋅(lhs::AFArray{T,N}, rhs::AFArray{T,N}) = dot(lhs, rhs)
+⋅{T,N}(lhs::AFArray{T,N}, rhs::AFArray{T,N}) = dot(lhs, rhs)
 
 function matmul{T}(lhs::AFMatrix{T}, rhs::AFMatrix{T}, optlhs, optrhs)
   out = af_array[0]
@@ -43,3 +43,18 @@ end
 matmulNT(lhs, rhs) = mult(lhs, rhs, AF_MAT_NONE, AF_MAT_TRANS)
 matmulTN(lhs, rhs) = mult(lhs, rhs, AF_MAT_TRANS, AF_MAT_NONE)
 matmulTT(lhs, rhs) = mult(lhs, rhs, AF_MAT_TRANS, AF_MAT_TRANS)
+
+for (fname, afname) in [(:exp, :af_exp),
+                        (:expm1, :af_expm1),
+                        (:log, :af_log),
+                        (:log10, :af_log10),
+                        (:log1p, :af_log1p),
+                        (:sqrt, :af_sqrt)]
+  @eval begin
+    function $(fname){T,N}(a::AFArray{T,N})
+      out = af_array[0]
+      $afname(out, a)
+      AFArray{T,N}(out[1])
+    end
+  end
+end

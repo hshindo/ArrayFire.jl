@@ -47,7 +47,7 @@ end
 
 eltype{T}(a::AFArray{T}) = T
 
-function ndims(a::af_array)
+function af_ndims(a::af_array)
   res = Cuint[0]
   af_get_numdims(res, a)
   Int(res[1])
