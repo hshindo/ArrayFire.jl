@@ -172,7 +172,7 @@ function cat_many{T,N}(dim::Int, as::Array{AFArray{T,N}})
   i = 1; j = min(9, length(as))
   out = AFArray{T,N}[]
   while i <= length(as)
-    out = AFArray{T,N}[con(dim, append!(out, as[i:j]))]
+    out = AFArray{T,N}[cat(dim, append!(out, as[i:j]))]
     i = j + 1; j = min(j*2-1, length(as))
   end
   out[1]
