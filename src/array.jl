@@ -166,7 +166,17 @@ function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
   af_join_many(p, dim-1, length(ps), ps)
   AFArray{T,N}(p[1])
 end
-#cat{T,N}(dim::Int, as::AFArray{T,N}...) = cat(dim, AFArray[as...])
+
+function cat_many{T,N}(dim::Int, as::Array{AFArray{T,N}})
+  (0 < dim <= N) || error("Invalid dimension: $(dim).")
+  i = 1; j = min(9, length(as))
+  out = AFArray{T,N}[]
+  while i <= length(as)
+    out = AFArray{T,N}[con(dim, append!(out, as[i:j]))]
+    i = j + 1; j = min(j*2-1, length(as))
+  end
+  out[1]
+end
 
 function reshape{T,N}(a::AFArray{T}, dims::NTuple{N,Int})
   p = af_array[0]
