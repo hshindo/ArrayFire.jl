@@ -46,7 +46,14 @@ function length(a::AFArray)
 end
 
 eltype{T}(a::AFArray{T}) = T
+
+function ndims(a::af_array)
+  res = Cuint[0]
+  af_get_numdims(res, a)
+  Int(res[1])
+end
 ndims{_,N}(a::AFArray{_,N}) = N
+
 similar{T,N}(a::AFArray{T,N}) = AFArray(T, size(a))
 
 ##### Methods of array class #####
@@ -99,7 +106,7 @@ function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int}
   AFArray{T,N}(p[1])
 end
 
-function fill{T,N}(value::T, dims::NTuple{N,Int})
+function fill{T,N}(::Type{AFArray}, value::T, dims::NTuple{N,Int})
   p = af_array[0]
   dims = dim_t[dims...]
   af_constant(p, value, N, dims, dtype(T))

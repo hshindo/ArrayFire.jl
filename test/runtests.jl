@@ -5,7 +5,12 @@ using Base.Test
 
 ArrayFire.available_backends()
 
+x = fill(AFArray, 1, (10,5))
 x = rand(AFArray{Float32}, 10, 5)
+x * 0.1f0
+ind = AFArray(Int[1,3])
+typeof(ind)
+lookup(x, ind, 2)
 ArrayFire.refcount(x)
 ArrayFire.reshape(x, (100,3))
 
