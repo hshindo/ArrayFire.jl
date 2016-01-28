@@ -4,7 +4,7 @@ export AFArray, AFVector, AFMatrix
 export matmul, matmulNT, matmulTN, matmulTT, lookup, device_info, flat
 export device_ptr, device_mem_info, cat_many
 
-import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, similar, lock, unlock, transpose, transpose!, unsafe_convert, fill
+import Base: show, length, size, ndims, rand, randn, cat, dot, .*, *, +, -, ⋅, similar, lock, unlock, transpose, transpose!, unsafe_convert, fill
 
 @windows? (
 begin
