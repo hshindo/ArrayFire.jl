@@ -10,13 +10,17 @@ function -{T,N}(x1::AFArray{T,N}, x2::AFArray{T,N})
   AFArray{T,N}(p[1])
 end
 
-function .*{T}(x1::AFArray{T}, x2::AFArray{T})
+function .*{T}(lhs::AFArray{T}, rhs::AFArray{T})
   p = af_array[0]
-  af_mul(p, x1.ptr, x2.ptr, true)
+  af_mul(p, lhs, rhs, true)
   N = ndims(p[1])
   AFArray{T,N}(p[1])
 end
 
+function *{T,N,V<:AbstractFloat}(lhs::AFArray{T,N}, rhs::V)
+  rhs = fill(AFArray, rhs, (1,))
+  lhs .* rhs
+end
 function *{T,N,V<:AbstractFloat}(lhs::AFArray{T,N}, rhs::V)
   rhs = fill(AFArray, rhs, (1,))
   lhs .* rhs
