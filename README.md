@@ -6,8 +6,8 @@ Currently, C interface on ArrayFire is used.
 When Cxx.jl becomes mature, C++ interface will be used instead.
 
 ## Basic Usage
-`AFArray{T,N}` is a simple wrapper of `array` class on ArrayFire.
-Function names may be changed to be consistent with the base module in Julia.
+`AFArray{T,N}` is a simple wrapper type of `array` class on the original ArrayFire.
+Function names may be changed to be consistent with `Array{T,N}` in Julia.
 ```julia
 using ArrayFire
 a = rand(AFArray{Float32}, 10, 5)
