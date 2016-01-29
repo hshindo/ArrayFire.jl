@@ -9,7 +9,10 @@ When Cxx.jl becomes mature, C++ interface will be used instead.
 `AFArray{T,N}` is a simple wrapper of `array` class on ArrayFire.
 Function names may be changed to be consistent with the base module in Julia.
 ```julia
+using ArrayFire
 a = rand(AFArray{Float32}, 10, 5)
 b = randn(AFArray{Float32}, 10, 5)
 c = a + b
+exp(c)
+sum(c, 1)
 ```
