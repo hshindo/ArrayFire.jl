@@ -11,26 +11,38 @@ end
 typealias AFVector{T} AFArray{T,1}
 typealias AFMatrix{T} AFArray{T,2}
 
+import Base.unsafe_convert
 unsafe_convert(::Type{af_array}, a::AFArray) = a.ptr
 
 function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
-  af_create_handle(p, N, dims, dtype(T))
-  AFArray{T,N}(p[1])
+  af_create_handle(out, N, dims, aftype(T))
+  AFArray{T,N}(out[1])
 end
 AFArray{T}(::Type{T}, dims...) = AFArray(T, dims)
 
 function AFArray{T,N}(data::Array{T,N})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[size(data)...]
-  af_create_array(p, data, N, dims, dtype(T))
-  AFArray{T,N}(p[1])
+  af_create_array(out, data, N, dims, aftype(T))
+  AFArray{T,N}(out[1])
+end
+
+function AFArray(ptr::af_array)
+  out = af_dtype[0]
+  af_get_type(out, a)
+  T = jltypes[out[1]]
+  p = out[1]
+  out = Cuint[0]
+  af_get_numdims(out, p)
+  N = Int(out[1])
+  AFArray{T,N}(ptr)
 end
 
 show(io::IO, a::AFArray) = show(io, to_host(a))
 
-function size{_,N}(a::AFArray{_,N})
+function size{T,N}(a::AFArray{T,N})
   dims = dim_t[0, 0, 0, 0]
   af_get_dims(pointer(dims,1), pointer(dims,2), pointer(dims,3), pointer(dims,4), a)
   N == 1 && return (dims[1],)
@@ -38,11 +50,12 @@ function size{_,N}(a::AFArray{_,N})
   N == 3 && return (dims[1], dims[2], dims[3])
   N == 4 && return (dims[1], dims[2], dims[3], dims[4])
 end
+size(a::AFArray, dim::Int) = size(a)[dim]
 
 function length(a::AFArray)
-  p = dim_t[0]
-  af_get_elements(p, a)
-  Int(p[1])
+  out = dim_t[0]
+  af_get_elements(out, a)
+  Int(out[1])
 end
 
 function af_eltype(a::af_array)
@@ -50,6 +63,7 @@ function af_eltype(a::af_array)
   af_get_type(out, a)
   jltypes[out[1]]
 end
+
 eltype{T}(a::AFArray{T}) = T
 
 function af_ndims(a::af_array)
@@ -57,16 +71,17 @@ function af_ndims(a::af_array)
   af_get_numdims(res, a)
   Int(res[1])
 end
-ndims{_,N}(a::AFArray{_,N}) = N
+
+ndims{T,N}(a::AFArray{T,N}) = N
 
 similar{T,N}(a::AFArray{T,N}) = AFArray(T, size(a))
 
 ##### Methods of array class #####
 
 function copy{T,N}(a::AFArray{T,N})
-  p = af_array[0]
-  af_copy_array(p, a)
-  AFArray{T,N}(p[1])
+  out = af_array[0]
+  af_copy_array(out, a)
+  AFArray{T,N}(out[1])
 end
 
 eval(a::AFArray) = af_eval(a)
@@ -101,75 +116,75 @@ function eye{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   af_identity(p, N, dims, dtype(T))
   AFArray{T,N}(p[1])
 end
-eye{T}(::Type{AFArray{T}}, dims...) = eye(T, dims)
+#eye{T}(::Type{AFArray{T}}, dims...) = eye(T, dims)
 
 function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
   tdims = dim_t[tdims...]
-  af_iota(p, N, dims, N, tdims, dtype(T))
-  AFArray{T,N}(p[1])
+  af_iota(out, N, dims, N, tdims, dtype(T))
+  AFArray{T,N}(out[1])
 end
 
 function fill{T,N}(::Type{AFArray}, value::T, dims::NTuple{N,Int})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
-  af_constant(p, value, N, dims, dtype(T))
-  AFArray{T,N}(p[1])
+  af_constant(out, value, N, dims, dtype(T))
+  AFArray{T,N}(out[1])
 end
 
 function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
-  af_randu(p, N, dims, dtype(T))
-  AFArray{T,N}(p[1])
+  af_randu(out, N, dims, dtype(T))
+  AFArray{T,N}(out[1])
 end
 rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
 
 function randn{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
-  af_randn(p, N, dims, dtype(T))
-  AFArray{T,N}(p[1])
+  af_randn(out, N, dims, dtype(T))
+  AFArray{T,N}(out[1])
 end
 randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
 
 function range{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, seqdim::Int)
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
-  af_range(p, N, dims, seqdim, dtype(T))
-  AFArray{T,N}(p[1])
+  af_range(out, N, dims, seqdim, dtype(T))
+  AFArray{T,N}(out[1])
 end
 
 ##### Helper functions for arrays. #####
 
 function cast{T,U}(a::AFArray{T}, ::Type{U})
-  p = af_array[0]
-  af_cast(p, a, dtype(U))
-  AFArray{T,N}(p[1])
+  out = af_array[0]
+  af_cast(out, a, dtype(U))
+  AFArray{T,N}(out[1])
 end
 
 ##### Move and Reorder array content. #####
 
 function vec{T,N}(a::AFArray{T,N})
-  p = af_array[0]
-  af_flat(p, a)
-  AFArray{T,1}(p[1])
+  out = af_array[0]
+  af_flat(out, a)
+  AFArray{T,1}(out[1])
 end
 
 function flip{T,N}(a::AFArray{T,N}, dim::Int)
   (0 < dim <= N) || error("Invalid dimension: $(dim).")
-  p = af_array[0]
-  af_flip(p, a, dim-1)
-  AFArray{T,N}(p[1])
+  out = af_array[0]
+  af_flip(out, a, dim-1)
+  AFArray{T,N}(out[1])
 end
 
 function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
   (0 < dim <= N) || error("Invalid dimension: $(dim).")
-  p = af_array[0]
+  out = af_array[0]
   ps = map(a -> a, as)
-  af_join_many(p, dim-1, length(ps), ps)
-  AFArray{T,N}(p[1])
+  af_join_many(out, dim-1, length(ps), ps)
+  AFArray{T,N}(out[1])
 end
 
 function cat_many{T,N}(dim::Int, as::Array{AFArray{T,N}})
@@ -184,17 +199,17 @@ function cat_many{T,N}(dim::Int, as::Array{AFArray{T,N}})
 end
 
 function reshape{T,N}(a::AFArray{T}, dims::NTuple{N,Int})
-  p = af_array[0]
+  out = af_array[0]
   dims = dim_t[dims...]
-  af_moddims(p, a, N, dims)
-  AFArray{T,N}(p[1])
+  af_moddims(out, a, N, dims)
+  AFArray{T,N}(out[1])
 end
 reshape{T}(a::AFArray{T}, dims...) = reshape(a, dims)
 
 function reorder{T,N}(a::AFArray{T,N}, x::Int, y::Int, z::Int, w::Int)
-  p = af_array[0]
-  af_reorder(p, a, Cuint(x), Cuint(y), Cuint(z), Cuint(w))
-  AFArray{T,N}(p[1])
+  out = af_array[0]
+  af_reorder(out, a, Cuint(x), Cuint(y), Cuint(z), Cuint(w))
+  AFArray{T,N}(out[1])
 end
 
 # af_replace
@@ -211,9 +226,9 @@ function tile{T,N}(a::AFArray{T,N})
 end
 
 function transpose{T}(a::AFMatrix{T}; conjugate::Bool=false)
-  p = af_array[0]
-  af_transpose(p, a, conjugate)
-  AFArray{T,2}(p[1])
+  out = af_array[0]
+  af_transpose(out, a, conjugate)
+  AFMatrix{T}(out[1])
 end
 
 # af_transpose_inplace
@@ -239,7 +254,7 @@ end
 
 ##### assignment
 function lookup{T,N}(a::AFArray{T,N}, indices::AFArray{Int}, dim::Int)
-  p = af_array[0]
-  af_lookup(p, a, indices, dim-1)
-  AFArray{T,N}(p[1])
+  out = af_array[0]
+  af_lookup(out, a, indices, dim-1)
+  AFArray{T,N}(out[1])
 end
