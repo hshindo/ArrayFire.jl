@@ -2,13 +2,15 @@ module ArrayFire
 
 import Base:
   show, size, length, eltype, ndims, similar, eye, fill, rand, randn,
-  vec, cat, reshape, transpose,
+  vec, cat, reshape, transpose
+import Base:
   +, -, *, .*, dot, A_mul_Bt, At_mul_B, At_mul_Bt,
   exp, expm1, log, log10, log1p, sqrt, tanh, abs, ceil, floor, round, sign, trunc
+import Base: findmax, maximum, sum
 
 export AFArray, AFVector, AFMatrix
-export matmul, matmulNT, matmulTN, matmulTT, lookup, device_info, flat
-export device_ptr, device_mem_info, cat_many
+export lookup, flat, cat_many
+export device_info, device_ptr, device_mem_info
 
 @windows? (
 begin
@@ -33,17 +35,18 @@ aftype(::Type{UInt64}) = u64
 aftype(::Type{Int16}) = s16
 aftype(::Type{UInt16}) = u16
 
-function jltype(dtype)
-  dtype == f32 && Float32
-  dtype == c32 && Complex{Float32}
-  dtype == f64 && Float64
-  dtype == c64 && Complex{Float64}
-  dtype == b8 && Bool
-  dtype == s32 && Int32
-  dtype == u32 && UInt32
-  dtype == u8 && UInt8
-  dtype == s64 && Int64
-  dtype == u64 && UInt64
+function jltype(dtype::af_dtype)
+  dtype == f32 && return Float32
+  dtype == c32 && return Complex{Float32}
+  dtype == f64 && return Float64
+  dtype == c64 && return Complex{Float64}
+  dtype == b8 && return Bool
+  dtype == s32 && return Int32
+  dtype == u32 && return UInt32
+  dtype == u8 && return UInt8
+  dtype == s64 && return Int64
+  dtype == u64 && return UInt64
+  throw("dtype no match")
 end
 
 function checkerror(err)

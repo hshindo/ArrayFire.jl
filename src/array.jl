@@ -29,17 +29,6 @@ function AFArray{T,N}(data::Array{T,N})
   AFArray{T,N}(out[1])
 end
 
-function AFArray(ptr::af_array)
-  out = af_dtype[0]
-  af_get_type(out, a)
-  T = jltypes[out[1]]
-  p = out[1]
-  out = Cuint[0]
-  af_get_numdims(out, p)
-  N = Int(out[1])
-  AFArray{T,N}(ptr)
-end
-
 show(io::IO, a::AFArray) = show(io, to_host(a))
 
 function size{T,N}(a::AFArray{T,N})
@@ -61,7 +50,7 @@ end
 function af_eltype(a::af_array)
   out = af_dtype[0]
   af_get_type(out, a)
-  jltypes[out[1]]
+  jltype(out[1])
 end
 
 eltype{T}(a::AFArray{T}) = T
@@ -113,7 +102,7 @@ end
 function eye{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   p = af_array[0]
   dims = dim_t[dims...]
-  af_identity(p, N, dims, dtype(T))
+  af_identity(p, N, dims, aftype(T))
   AFArray{T,N}(p[1])
 end
 #eye{T}(::Type{AFArray{T}}, dims...) = eye(T, dims)
@@ -122,21 +111,21 @@ function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int}
   out = af_array[0]
   dims = dim_t[dims...]
   tdims = dim_t[tdims...]
-  af_iota(out, N, dims, N, tdims, dtype(T))
+  af_iota(out, N, dims, N, tdims, aftype(T))
   AFArray{T,N}(out[1])
 end
 
 function fill{T,N}(::Type{AFArray}, value::T, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
-  af_constant(out, value, N, dims, dtype(T))
+  af_constant(out, value, N, dims, aftype(T))
   AFArray{T,N}(out[1])
 end
 
 function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
-  af_randu(out, N, dims, dtype(T))
+  af_randu(out, N, dims, aftype(T))
   AFArray{T,N}(out[1])
 end
 rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
@@ -144,7 +133,7 @@ rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
 function randn{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
-  af_randn(out, N, dims, dtype(T))
+  af_randn(out, N, dims, aftype(T))
   AFArray{T,N}(out[1])
 end
 randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
@@ -152,7 +141,7 @@ randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
 function range{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, seqdim::Int)
   out = af_array[0]
   dims = dim_t[dims...]
-  af_range(out, N, dims, seqdim, dtype(T))
+  af_range(out, N, dims, seqdim, aftype(T))
   AFArray{T,N}(out[1])
 end
 
@@ -160,7 +149,7 @@ end
 
 function cast{T,U}(a::AFArray{T}, ::Type{U})
   out = af_array[0]
-  af_cast(out, a, dtype(U))
+  af_cast(out, a, aftype(U))
   AFArray{T,N}(out[1])
 end
 
@@ -173,14 +162,14 @@ function vec{T,N}(a::AFArray{T,N})
 end
 
 function flip{T,N}(a::AFArray{T,N}, dim::Int)
-  (0 < dim <= N) || error("Invalid dimension: $(dim).")
+  (0 < dim <= N) || throw("Invalid dimension: $(dim).")
   out = af_array[0]
   af_flip(out, a, dim-1)
   AFArray{T,N}(out[1])
 end
 
 function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
-  (0 < dim <= N) || error("Invalid dimension: $(dim).")
+  (0 < dim <= N) || throw("Invalid dimension: $(dim).")
   out = af_array[0]
   ps = map(a -> a, as)
   af_join_many(out, dim-1, length(ps), ps)
@@ -188,7 +177,7 @@ function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
 end
 
 function cat_many{T,N}(dim::Int, as::Array{AFArray{T,N}})
-  (0 < dim <= N) || error("Invalid dimension: $(dim).")
+  (0 < dim <= N) || throw("Invalid dimension: $(dim).")
   i = 1; j = min(9, length(as))
   out = AFArray{T,N}[]
   while i <= length(as)
