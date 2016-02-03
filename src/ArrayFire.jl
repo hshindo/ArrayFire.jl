@@ -9,8 +9,11 @@ import Base:
 import Base: findmax, maximum, sum
 
 export AFArray, AFVector, AFMatrix
-export lookup, flat, cat_many
+export lookup, flat
 export device_info, device_ptr, device_mem_info, release
+
+# image.jl
+export unwrap, wrap
 
 @windows? (
 begin
@@ -62,5 +65,6 @@ include("array.jl")
 include("device.jl")
 include("math.jl")
 include("vector.jl")
+include("image.jl")
 
 end

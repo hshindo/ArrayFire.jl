@@ -3,7 +3,7 @@ type AFArray{T,N}
 
   function AFArray(ptr)
     a = new(ptr)
-    #finalizer(a, release)
+    finalizer(a, release)
     a
   end
 end
@@ -171,8 +171,7 @@ function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
   (0 < dim <= N) || throw("Invalid dimension: $(dim).")
   (0 < length(as) <= 100) || throw("Invalid input: $(as).")
   out = af_array[0]
-  ps = map(a -> a, as)
-  af_join_many(out, dim-1, length(ps), ps)
+  af_join_many(out, dim-1, length(as), as)
   AFArray{T,N}(out[1])
 end
 
