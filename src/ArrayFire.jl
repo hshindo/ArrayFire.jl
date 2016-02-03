@@ -1,7 +1,7 @@
 module ArrayFire
 
 import Base:
-  show, size, length, eltype, ndims, similar, eye, fill, rand, randn,
+  unsafe_convert, show, size, length, eltype, ndims, similar, eye, fill, rand, randn,
   vec, cat, reshape, transpose
 import Base:
   +, -, *, .*, dot, A_mul_Bt, At_mul_B, At_mul_Bt,
@@ -10,11 +10,12 @@ import Base: findmax, maximum, sum
 
 export AFArray, AFVector, AFMatrix
 export lookup, flat, cat_many
-export device_info, device_ptr, device_mem_info
+export device_info, device_ptr, device_mem_info, release
 
 @windows? (
 begin
-  const libaf = Libdl.find_library(["af"])
+  #const libaf = Libdl.find_library(["afcpu"])
+  const libaf = abspath(joinpath(dirname(@__FILE__), "..", "deps", "afcpu"))
 end : begin
   const libaf = Libdl.find_library(["libaf"])
 end)

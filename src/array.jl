@@ -3,7 +3,7 @@ type AFArray{T,N}
 
   function AFArray(ptr)
     a = new(ptr)
-    finalizer(a, release)
+    #finalizer(a, release)
     a
   end
 end
@@ -11,7 +11,6 @@ end
 typealias AFVector{T} AFArray{T,1}
 typealias AFMatrix{T} AFArray{T,2}
 
-import Base.unsafe_convert
 unsafe_convert(::Type{af_array}, a::AFArray) = a.ptr
 
 function AFArray{T,N}(::Type{T}, dims::NTuple{N,Int})
@@ -170,21 +169,11 @@ end
 
 function cat{T,N}(dim::Int, as::Vector{AFArray{T,N}})
   (0 < dim <= N) || throw("Invalid dimension: $(dim).")
+  (0 < length(as) <= 100) || throw("Invalid input: $(as).")
   out = af_array[0]
   ps = map(a -> a, as)
   af_join_many(out, dim-1, length(ps), ps)
   AFArray{T,N}(out[1])
-end
-
-function cat_many{T,N}(dim::Int, as::Array{AFArray{T,N}})
-  (0 < dim <= N) || throw("Invalid dimension: $(dim).")
-  i = 1; j = min(9, length(as))
-  out = AFArray{T,N}[]
-  while i <= length(as)
-    out = AFArray{T,N}[cat(dim, append!(out, as[i:j]))]
-    i = j + 1; j = min(j*2-1, length(as))
-  end
-  out[1]
 end
 
 function reshape{T,N}(a::AFArray{T}, dims::NTuple{N,Int})
