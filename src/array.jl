@@ -121,6 +121,8 @@ function fill{T,N}(::Type{AFArray}, value::T, dims::NTuple{N,Int})
   AFArray{T,N}(out[1])
 end
 
+zeros{T}(a::AFArray{T}) = fill(AFArray, T(0), size(a))
+
 function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]

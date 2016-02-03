@@ -1,11 +1,12 @@
 module ArrayFire
 
 import Base:
-  unsafe_convert, show, size, length, eltype, ndims, similar, eye, fill, rand, randn,
+  unsafe_convert, show, size, length, eltype, ndims, zeros, similar, eye, fill, rand, randn,
   vec, cat, reshape, transpose
 import Base:
   +, -, *, .*, dot, A_mul_Bt, At_mul_B, At_mul_Bt,
-  exp, expm1, log, log10, log1p, sqrt, tanh, abs, ceil, floor, round, sign, trunc
+  exp, expm1, log, log10, log1p, sqrt, tanh, abs, ceil, floor, round, sign, trunc,
+  >=, >, <=, <
 import Base: findmax, maximum, sum
 
 export AFArray, AFVector, AFMatrix
@@ -55,7 +56,7 @@ end
 
 function checkerror(err)
   if err != AF_SUCCESS
-    throw(err)
+    throw(Int(err))
   end
 end
 
