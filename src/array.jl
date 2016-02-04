@@ -103,48 +103,48 @@ end
 
 ##### Functions to create arrays. #####
 
-function eye{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
-  out = af_array[0]
-  dims = dim_t[dims...]
-  af_identity(out, N, dims, aftype(T))
-  AFArray(out[1])
-end
+#function eye{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
+#  out = af_array[0]
+#  dims = dim_t[dims...]
+#  af_identity(out, N, dims, aftype(T))
+#  AFArray(out[1])
+#end
 #eye{T}(::Type{AFArray{T}}, dims...) = eye(T, dims)
 
-function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int})
-  out = af_array[0]
-  dims = dim_t[dims...]
-  tdims = dim_t[tdims...]
-  af_iota(out, N, dims, N, tdims, aftype(T))
-  AFArray(out[1])
-end
+#function iota{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, tdims::NTuple{N,Int})
+#  out = af_array[0]
+#  dims = dim_t[dims...]
+#  tdims = dim_t[tdims...]
+#  af_iota(out, N, dims, N, tdims, aftype(T))
+#  AFArray(out[1])
+#end
 
 function fill{T,N}(::Type{AFArray}, value::T, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
   af_constant(out, value, N, dims, aftype(T))
-  AFArray{T,N}(out[1])
+  AFArray(out[1])
 end
 
 zeros(in::AFArray) = fill(AFArray, eltype(in)(0), size(in))
 
-function rand{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
+function rand{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
   af_randu(out, N, dims, aftype(T))
   AFArray(out[1])
 end
-rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
+rand{T}(::Type{AFArray}, ::Type{T}, dims...) = rand(AFArray, T, dims)
 
-function randn{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
+function randn{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int})
   out = af_array[0]
   dims = dim_t[dims...]
   af_randn(out, N, dims, aftype(T))
   AFArray(out[1])
 end
-randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
+randn{T}(::Type{AFArray}, ::Type{T}, dims...) = randn(AFArray, T, dims)
 
-function range{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, seqdim::Int)
+function range{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int}, seqdim::Int)
   out = af_array[0]
   dims = dim_t[dims...]
   af_range(out, N, dims, seqdim, aftype(T))
@@ -153,9 +153,9 @@ end
 
 ##### Helper functions for arrays. #####
 
-function cast{T,U}(in::AFArray{T}, ::Type{U})
+function cast{T}(in::AFArray, ::Type{T})
   out = af_array[0]
-  af_cast(out, in, aftype(U))
+  af_cast(out, in, aftype(T))
   AFArray(out[1])
 end
 
@@ -238,7 +238,7 @@ function setbackend(backend)
 end
 
 ##### assignment
-function lookup(in::AFArray, indices::AFArray{Int}, dim::Int)
+function lookup(in::AFArray, indices::AFArray, dim::Int)
   out = af_array[0]
   af_lookup(out, in, indices, dim-1)
   AFArray(out[1])
