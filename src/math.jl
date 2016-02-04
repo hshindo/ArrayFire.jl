@@ -1,42 +1,40 @@
-function +{T,N}(lhs::AFArray{T,N}, rhs::AFArray{T,N})
+function +(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_add(out, lhs, rhs, true)
-  AFArray{T,N}(out[1])
+  AFArray(out[1])
 end
 
-function -{T,N}(lhs::AFArray{T,N}, rhs::AFArray{T,N})
+function -(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_sub(out, lhs, rhs, true)
-  AFArray{T,N}(out[1])
+  AFArray(out[1])
 end
--{T,N}(a::AFArray{T,N}) = fill(AFArray, T(0), size(a)) - a
+
+-(in::AFArray) = zeros(in) - in
 
 function .*(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_mul(out, lhs, rhs, true)
-  T = af_eltype(out[1])
-  N = af_ndims(out[1])
-  AFArray{T,N}(out[1])
+  AFArray(out[1])
 end
 *(lhs::AFArray, rhs::Number) = lhs .* AFArray([rhs])
 *(lhs::Number, rhs::AFArray) = AFArray([lhs]) .* rhs
 
-#TODO: make AF_MAT_NONE variable
-function dot{T,N}(lhs::AFArray{T,N}, rhs::AFArray{T,N})
+function dot(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_dot(out, lhs, rhs, AF_MAT_NONE, AF_MAT_NONE)
-  AFArray{T,N}(out[1])
+  AFArray(out[1])
 end
 
-function matmul{T}(lhs::AFMatrix{T}, rhs::AFMatrix{T}, optlhs, optrhs)
+function matmul(lhs::AFArray, rhs::AFArray, optlhs, optrhs)
   out = af_array[0]
   af_matmul(out, lhs, rhs, optlhs, optrhs)
-  AFMatrix{T}(out[1])
+  AFArray(out[1])
 end
-*(lhs::AFMatrix, rhs::AFMatrix) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_NONE)
-A_mul_Bt(lhs::AFMatrix, rhs::AFMatrix) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_TRANS)
-At_mul_B(lhs::AFMatrix, rhs::AFMatrix) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_NONE)
-At_mul_Bt(lhs::AFMatrix, rhs::AFMatrix) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_TRANS)
+*(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_NONE)
+A_mul_Bt(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_TRANS)
+At_mul_B(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_NONE)
+At_mul_Bt(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_TRANS)
 
 for (fname, afname) in [(:exp, :af_exp),
                         (:expm1, :af_expm1),
@@ -52,10 +50,10 @@ for (fname, afname) in [(:exp, :af_exp),
                         (:sign, :af_sign),
                         (:trunc, :af_trunc)]
   @eval begin
-    function $(fname){T,N}(a::AFArray{T,N})
+    function $(fname)(in::AFArray)
       out = af_array[0]
-      $afname(out, a)
-      AFArray{T,N}(out[1])
+      $afname(out, in)
+      AFArray(out[1])
     end
   end
 end
@@ -65,6 +63,6 @@ end
 function >=(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_ge(out, lhs, rhs, true)
-  AFMatrix{UInt8}(out[1])
+  AFArray(out[1])
 end
 >=(lhs::AFArray, rhs::Number) = lhs >= AFArray([rhs])

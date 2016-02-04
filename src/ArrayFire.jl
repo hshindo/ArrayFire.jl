@@ -10,11 +10,13 @@ import Base:
 import Base: findmax, maximum, sum
 
 export AFArray, AFVector, AFMatrix
-export lookup, flat
+export lookup
 export device_info, device_ptr, device_mem_info, release
 
 # image.jl
 export unwrap, wrap
+
+global af_buffer = []
 
 @windows? (
 begin
