@@ -41,12 +41,13 @@ function device_count()
 end
 
 function device_info()
-  name = Cchar[0]
-  platform = Cchar[0]
-  toolkit = Cchar[0]
-  compute = Cchar[0]
+  name = UInt8[0]
+  platform = UInt8[0]
+  toolkit = UInt8[0]
+  compute = UInt8[0]
   af_device_info(name, platform, toolkit, compute)
-  error("Not implemented yet.")
+  bytestring(name[1])
+  #error("Not implemented yet.")
 end
 
 function alloc_pinned()

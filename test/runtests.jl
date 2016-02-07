@@ -1,16 +1,22 @@
 push!(LOAD_PATH, joinpath(dirname(@__FILE__), "../.."))
+push!(LOAD_PATH, joinpath(dirname(@__FILE__), "..", "deps"))
+push!(LOAD_PATH, "C:/Program Files/ArrayFire/v3/lib")
 workspace()
+ENV
 using ArrayFire
 using Base.Test
-
+find_library(["C:/Program Files/ArrayFire/v3/lib/af"])
+a = abspath(joinpath(dirname(@__FILE__), "..", "deps", "afcpu.dll"))
+Libdl.dlopen(a)
 ArrayFire.available_backends()
 
-x = rand(AFArray{Float32}, 10, 5)
-sum(x,0)
+x = rand(Float32, 10, 5)
+xx = AFArray(x)
+x[1] = 1.0
+x
+xx
 
-v, i = findmax(x, 1)
-v
-i
+x = rand(AFArray{Float32}, 10, 5)
 
 function bench()
   x = rand(AFArray{Float32}, 10, 5, 2, 3)

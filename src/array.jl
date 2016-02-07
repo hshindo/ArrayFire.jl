@@ -3,8 +3,8 @@ type AFArray
 
   function AFArray(ptr)
     a = new(ptr)
-    push!(af_buffer, a)
-    #finalizer(a, release)
+    #push!(af_buffer, a)
+    finalizer(a, release)
     a
   end
 end
@@ -175,7 +175,7 @@ function flip(in::AFArray, dim::Int)
 end
 
 function cat(dim::Int, ins::Vector{AFArray})
-  length(ins) == 1 && return ins[1]
+  length(ins) == 1 && return copy(ins[1])
   dim > 0 || throw("Invalid dimension: $(dim).")
   (1 < length(ins) <= 150) || throw("Invalid input length: $(length(ins)).")
   out = af_array[0]
