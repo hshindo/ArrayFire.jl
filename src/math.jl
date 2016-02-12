@@ -26,6 +26,9 @@ function dot(lhs::AFArray, rhs::AFArray)
   AFArray(out[1])
 end
 
+function matmul(optlhs, optrhs)
+
+end
 function matmul(lhs::AFArray, rhs::AFArray, optlhs, optrhs)
   out = af_array[0]
   af_matmul(out, lhs, rhs, optlhs, optrhs)

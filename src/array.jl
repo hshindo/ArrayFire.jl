@@ -2,8 +2,7 @@ type AFArray
   ptr::af_array
 
   function AFArray(ptr)
-    a = new(ptr)
-    #push!(af_buffer, a)
+    a = new(ptr, false)
     finalizer(a, release)
     a
   end
@@ -175,9 +174,9 @@ function flip(in::AFArray, dim::Int)
 end
 
 function cat(dim::Int, ins::Vector{AFArray})
-  length(ins) == 1 && return copy(ins[1])
+  #length(ins) == 1 && return copy(ins[1])
   dim > 0 || throw("Invalid dimension: $(dim).")
-  (1 < length(ins) <= 150) || throw("Invalid input length: $(length(ins)).")
+  (0 < length(ins) < 200) || throw("Invalid input length: $(length(ins)).")
   out = af_array[0]
   af_join_many(out, dim-1, length(ins), ins)
   AFArray(out[1])
@@ -223,18 +222,21 @@ end
 function available_backends()
   p = Cint[0]
   af_get_available_backends(p)
-  b = p[1]
-  cpu = b & AF_BACKEND_CPU
-  cuda = b & AF_BACKEND_CUDA
-  opencl = b & AF_BACKEND_OPENCL
-  cpu, cuda, opencl
+  v = Int(p[1])
+  cpu = (v & AF_BACKEND_CPU) != 0
+  cuda = (v & AF_BACKEND_CUDA) != 0
+  opencl = (v & AF_BACKEND_OPENCL) != 0
+  "cpu:$(cpu), cuda:$(cuda), opencl:$(opencl)"
 end
 
 # af_get_backend_count
 # af_get_backend_id
 
 function setbackend(backend)
-  af_set_backend(backend)
+  backend == "cpu" && (b = AF_BACKEND_CPU)
+  backend == "cuda" && (b = AF_BACKEND_CUDA)
+  backend == "opencl" && (b = AF_BACKEND_OPENCL)
+  af_set_backend(b)
 end
 
 ##### assignment
@@ -242,4 +244,16 @@ function lookup(in::AFArray, indices::AFArray, dim::Int)
   out = af_array[0]
   af_lookup(out, in, indices, dim-1)
   AFArray(out[1])
+end
+
+##### extra functions (not included in original arrayfire) #####
+function logsoftmax(in::AFArray)
+  max = maximum(in, 1)
+  m = x - max
+  e = exp(m)
+  z = sum(e, 1)
+  logz = log(z)
+  y = m - logz
+  map(release, (max,m,e,z,logz))
+  y
 end

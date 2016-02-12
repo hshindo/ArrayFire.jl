@@ -26,13 +26,13 @@ function mem_stepsize()
   Int(p[1])
 end
 
-lock(a::AFArray) = af_lock_device_ptr(a)
+lock_device_ptr(a::AFArray) = af_lock_device_ptr(a)
 
-unlock(a::AFArray) = af_unlock_device_ptr(a)
+unlock_device_ptr(a::AFArray) = af_unlock_device_ptr(a)
 
 set_mem_stepsize(bytes::Int) = af_set_mem_step_size(bytes)
 
-free(a::AFArray) = af_free_device(a)
+free_device(a::AFArray) = af_free_device(a)
 
 function device_count()
   p = Cint[0]

@@ -10,19 +10,16 @@ import Base:
 import Base: findmax, maximum, sum
 
 export AFArray
-export lookup, available_backends
-export device_info, device_ptr, device_mem_info, release
+export lookup, available_backends, setbackend, logsoftmax, free_device, lock_device_ptr, unlock_device_ptr
+export device_info, device_ptr, device_mem_info, release, mem_stepsize, set_mem_stepsize
 
 # image.jl
 export unwrap, wrap
 
-const af_buffer = []
-
 @windows? (
 begin
-  #const libaf = Libdl.find_library(["afcpu"])
-  const libaf = abspath(joinpath(dirname(@__FILE__), "..", "deps", "afcpu.dll"))
-  #const libaf = Libdl.find_library(["af"], ["C:/Program Files/ArrayFire/v3/lib"])
+  const libaf = Libdl.find_library(["af"])
+  #const libaf = abspath(joinpath(dirname(@__FILE__), "..", "deps", "af"))
 end : begin
   error("")
   const libaf = Libdl.find_library(["libaf"])
