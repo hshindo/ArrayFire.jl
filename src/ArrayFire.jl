@@ -2,7 +2,7 @@ module ArrayFire
 
 export AFArray
 # array.jl
-export release, cast, lookup, available_backends, setbackend
+export cast, lookup, available_backends, setbackend
 # image.jl
 export unwrap, wrap
 
@@ -17,6 +17,12 @@ end)
 #!isempty(libaf) || error("ArrayFire library cannot be found.")
 
 include("types.jl")
+include("libaf.jl")
+include("array.jl")
+include("device.jl")
+include("math.jl")
+include("vector.jl")
+include("image.jl")
 
 aftype(::Type{Float32}) = f32
 aftype(::Type{Complex{Float32}}) = c32
@@ -36,13 +42,5 @@ function checkerror(err)
     throw(Int(err))
   end
 end
-
-include("libaf.jl")
-
-include("array.jl")
-include("device.jl")
-include("math.jl")
-include("vector.jl")
-include("image.jl")
 
 end

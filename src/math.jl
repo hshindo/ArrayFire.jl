@@ -62,10 +62,18 @@ for (fname, afname) in [(:exp, :af_exp),
   end
 end
 
-import Base.>=
-function >=(lhs::AFArray, rhs::AFArray)
-  out = af_array[0]
-  af_ge(out, lhs, rhs, true)
-  AFArray(out[1])
+import Base: >=, >, <=, <
+for (fname, afname) in [(:>=, :af_ge),
+                        (:>, :af_gt),
+                        (:<=, :af_le),
+                        (:<, :af_lt)]
+  @eval begin
+    function $(fname)(lhs::AFArray, rhs::AFArray)
+      out = af_array[0]
+      $afname(out, lhs, rhs, true)
+      AFArray(out[1])
+    end
+    $(fname)(lhs::AFArray, rhs::Number) = $(fname)(lhs, AFArray([rhs]))
+    $(fname)(lhs::Number, rhs::AFArray) = $(fname)(AFArray([lhs]), rhs)
+  end
 end
->=(lhs::AFArray, rhs::Number) = lhs >= AFArray([rhs])
