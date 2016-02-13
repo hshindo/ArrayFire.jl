@@ -1,43 +1,44 @@
+import Base.+
 function +(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_add(out, lhs, rhs, true)
   AFArray(out[1])
 end
 
+import Base.-
 function -(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_sub(out, lhs, rhs, true)
   AFArray(out[1])
 end
-
 -(in::AFArray) = zeros(in) - in
 
+import Base.(.*)
 function .*(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_mul(out, lhs, rhs, true)
   AFArray(out[1])
 end
+
+import Base.*
 *(lhs::AFArray, rhs::Number) = lhs .* AFArray([rhs])
 *(lhs::Number, rhs::AFArray) = AFArray([lhs]) .* rhs
 
-function dot(lhs::AFArray, rhs::AFArray)
+function Base.dot(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_dot(out, lhs, rhs, AF_MAT_NONE, AF_MAT_NONE)
   AFArray(out[1])
 end
 
-function matmul(optlhs, optrhs)
-
-end
 function matmul(lhs::AFArray, rhs::AFArray, optlhs, optrhs)
   out = af_array[0]
   af_matmul(out, lhs, rhs, optlhs, optrhs)
   AFArray(out[1])
 end
 *(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_NONE)
-A_mul_Bt(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_TRANS)
-At_mul_B(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_NONE)
-At_mul_Bt(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_TRANS)
+Base.A_mul_Bt(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_NONE, AF_MAT_TRANS)
+Base.At_mul_B(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_NONE)
+Base.At_mul_Bt(lhs::AFArray, rhs::AFArray) = matmul(lhs, rhs, AF_MAT_TRANS, AF_MAT_TRANS)
 
 for (fname, afname) in [(:exp, :af_exp),
                         (:expm1, :af_expm1),
@@ -53,7 +54,7 @@ for (fname, afname) in [(:exp, :af_exp),
                         (:sign, :af_sign),
                         (:trunc, :af_trunc)]
   @eval begin
-    function $(fname)(in::AFArray)
+    function Base.$(fname)(in::AFArray)
       out = af_array[0]
       $afname(out, in)
       AFArray(out[1])
@@ -61,8 +62,7 @@ for (fname, afname) in [(:exp, :af_exp),
   end
 end
 
-##### Logical operations #####
-
+import Base.>=
 function >=(lhs::AFArray, rhs::AFArray)
   out = af_array[0]
   af_ge(out, lhs, rhs, true)

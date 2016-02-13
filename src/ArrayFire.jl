@@ -1,18 +1,8 @@
 module ArrayFire
 
-import Base:
-  unsafe_convert, show, size, length, eltype, ndims, zeros, similar, eye, fill, rand, randn,
-  vec, cat, reshape, transpose
-import Base:
-  +, -, *, .*, dot, A_mul_Bt, At_mul_B, At_mul_Bt,
-  exp, expm1, log, log10, log1p, sqrt, tanh, abs, ceil, floor, round, sign, trunc,
-  >=, >, <=, <
-import Base: findmax, maximum, sum
-
 export AFArray
-export lookup, available_backends, setbackend, logsoftmax, free_device, lock_device_ptr, unlock_device_ptr
-export device_info, device_ptr, device_mem_info, release, mem_stepsize, set_mem_stepsize
-
+# array.jl
+export release, cast, lookup, available_backends, setbackend
 # image.jl
 export unwrap, wrap
 

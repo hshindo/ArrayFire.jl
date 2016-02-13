@@ -1,8 +1,3 @@
-function alloc_device()
-  error("Not implemented yet.")
-  #af_alloc_device
-end
-
 device_gc() = af_device_gc()
 
 function device_mem_info()
@@ -48,11 +43,6 @@ function device_info()
   af_device_info(name, platform, toolkit, compute)
   bytestring(name[1])
   #error("Not implemented yet.")
-end
-
-function alloc_pinned()
-  #af_alloc_pinned
-  error("Not implemented yet.")
 end
 
 function getdevice(device::Int)
