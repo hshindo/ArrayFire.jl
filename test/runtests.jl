@@ -10,8 +10,8 @@ setbackend("cpu")
 x = rand(Float32,10,5) |> AFArray(x)
 
 
-xs = [rand(Float32,10,5) |> AFArray for i=1:199]
-cat(1, xs)
+xs = [rand(Float32,10,5) |> AFArray for i=1:300]
+cat(xs, 2)
 
 x = rand(Float32, 10, 5)
 xx = AFArray(x)

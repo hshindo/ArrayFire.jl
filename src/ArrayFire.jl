@@ -2,7 +2,7 @@ module ArrayFire
 
 export AFArray
 # array.jl
-export cast, lookup, available_backends, setbackend
+export to_host, cast, lookup, available_backends, setbackend
 # image.jl
 export unwrap, wrap
 

@@ -159,7 +159,7 @@ end
 
 function Base.cat(ins::Vector{AFArray}, dim::Int)
   dim > 0 || throw("Invalid dimension: $(dim).")
-  (0 < length(ins) < 200) || throw("Invalid input length: $(length(ins)).")
+  length(ins) == 0 && throw("Invalid input length: $(length(ins)).")
   out = af_array[0]
   af_join_many(out, dim-1, length(ins), ins)
   AFArray(out[1])
