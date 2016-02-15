@@ -122,6 +122,14 @@ Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims) = fill(AFArray, T(0), dims)
 Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims...) = zeros(AFArray, T, dims)
 Base.zeros(in::AFArray) = fill(AFArray, eltype(in), size(in))
 
+function Base.range{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int}, seq_dim::Int=-1)
+  out = af_array[0]
+  dims = dim_t[dims...]
+  af_range(out, N, dims, seq_dim, aftype(T))
+  AFArray(out[1])
+end
+Base.range{T}(::Type{AFArray}, ::Type{T}, dims::Int...) = range(AFArray, T, dims)
+
 function Base.rand{T}(::Type{AFArray}, ::Type{T}, dims)
   out = af_array[0]
   dims = dim_t[dims...]

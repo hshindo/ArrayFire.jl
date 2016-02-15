@@ -7,6 +7,7 @@ using Base.Test
 available_backends()
 setbackend("cpu")
 
+x = range(AFArray, Int, 5)
 x = rand(Float32,10,5) |> AFArray(x)
 
 
