@@ -12,6 +12,7 @@ end
 function device_ptr(a::AFArray)
   p = Ptr{Void}[0]
   af_get_device_ptr(p, a)
+  #finalizer(a, unlock_device_ptr)
   p[1]
 end
 

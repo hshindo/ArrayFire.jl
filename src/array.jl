@@ -27,6 +27,16 @@ Base.unsafe_convert(::Type{af_array}, a::AFArray) = a.ptr
 
 Base.show(io::IO, in::AFArray) = show(io, to_host(in))
 
+function jl_size(in::AFArray)
+  dims = dim_t[0, 0, 0, 0]
+  af_get_dims(pointer(dims,1), pointer(dims,2), pointer(dims,3), pointer(dims,4), in)
+  dims[4] > 1 && return Int(dims[1]), Int(dims[2]), Int(dims[3]), Int(dims[4])
+  dims[3] > 1 && return Int(dims[1]), Int(dims[2]), Int(dims[3])
+  dims[2] > 1 && return Int(dims[1]), Int(dims[2])
+  (Int(dims[1]), )
+end
+jl_size(in::AFArray, dim::Int) = jl_size(in)[dim]
+
 function Base.size(in::AFArray)
   dims = dim_t[0, 0, 0, 0]
   af_get_dims(pointer(dims,1), pointer(dims,2), pointer(dims,3), pointer(dims,4), in)
@@ -74,7 +84,7 @@ end
 eval(in::AFArray) = af_eval(in)
 
 function to_host(in::AFArray)
-  out = Array(eltype(in), size(in))
+  out = Array(eltype(in), jl_size(in))
   af_get_data_ptr(out, in)
   out
 end
@@ -119,13 +129,17 @@ function Base.fill(::Type{AFArray}, value, dims)
 end
 
 Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims) = fill(AFArray, T(0), dims)
-Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims...) = zeros(AFArray, T, dims)
-Base.zeros(in::AFArray) = fill(AFArray, eltype(in), size(in))
+Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims...) = fill(AFArray, T(0), dims)
+Base.zeros(in::AFArray) = zeros(AFArray, eltype(in), size(in))
 
-function Base.range{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int}, seq_dim::Int=-1)
+Base.ones{T}(::Type{AFArray}, ::Type{T}, dims) = fill(AFArray, T(1), dims)
+Base.ones{T}(::Type{AFArray}, ::Type{T}, dims...) = fill(AFArray, T(1), dims)
+Base.ones(in::AFArray) = ones(AFArray, eltype(in), size(in))
+
+function Base.range{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int}, seq_dim::Int=0)
   out = af_array[0]
   dims = dim_t[dims...]
-  af_range(out, N, dims, seq_dim, aftype(T))
+  af_range(out, N, dims, seq_dim-1, aftype(T))
   AFArray(out[1])
 end
 Base.range{T}(::Type{AFArray}, ::Type{T}, dims::Int...) = range(AFArray, T, dims)
@@ -180,6 +194,13 @@ function Base.reshape(in::AFArray, dims)
   AFArray(out[1])
 end
 Base.reshape(in::AFArray, dims...) = reshape(in, dims)
+
+function moddims(in::AFArray, dims)
+  out = af_array[0]
+  dims = dim_t[dims...]
+  af_moddims(out, in, length(dims), dims)
+  AFArray(out[1])
+end
 
 function reorder(in::AFArray, x::Int, y::Int, z::Int, w::Int)
   out = af_array[0]

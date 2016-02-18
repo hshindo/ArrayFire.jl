@@ -4,6 +4,8 @@ function +(lhs::AFArray, rhs::AFArray)
   af_add(out, lhs, rhs, true)
   AFArray(out[1])
 end
++{T<:Number}(lhs::AFArray, rhs::T) = lhs + AFArray(T[rhs])
++{T<:Number}(lhs::T, rhs::AFArray) = AFArray(T[lhs]) + rhs
 
 import Base.-
 function -(lhs::AFArray, rhs::AFArray)
@@ -12,6 +14,8 @@ function -(lhs::AFArray, rhs::AFArray)
   AFArray(out[1])
 end
 -(in::AFArray) = zeros(in) - in
+-{T<:Number}(lhs::AFArray, rhs::T) = lhs - AFArray(T[rhs])
+-{T<:Number}(lhs::T, rhs::AFArray) = AFArray(T[lhs]) - rhs
 
 import Base.(.*)
 function .*(lhs::AFArray, rhs::AFArray)
@@ -21,8 +25,8 @@ function .*(lhs::AFArray, rhs::AFArray)
 end
 
 import Base.*
-*(lhs::AFArray, rhs::Number) = lhs .* AFArray([rhs])
-*(lhs::Number, rhs::AFArray) = AFArray([lhs]) .* rhs
+*{T<:Number}(lhs::AFArray, rhs::T) = lhs .* AFArray(T[rhs])
+*{T<:Number}(lhs::T, rhs::AFArray) = AFArray(T[lhs]) .* rhs
 
 function Base.dot(lhs::AFArray, rhs::AFArray)
   out = af_array[0]

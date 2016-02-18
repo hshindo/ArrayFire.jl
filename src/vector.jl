@@ -14,7 +14,7 @@ function Base.maximum(in::AFArray, dim::Int)
 end
 
 function Base.sum(in::AFArray, dim::Int)
-  dim > 0 || throw("Invalid dimension: $(dim).")
+  #dim > 0 || throw("Invalid dimension: $(dim).")
   out = af_array[0]
   af_sum(out, in, dim-1)
   AFArray(out[1])
