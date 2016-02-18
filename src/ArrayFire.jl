@@ -12,7 +12,6 @@ begin
   const libaf = Libdl.find_library(["af"])
   #const libaf = abspath(joinpath(dirname(@__FILE__), "..", "deps", "af"))
 end : begin
-  error("")
   const libaf = Libdl.find_library(["libaf"])
 end)
 #!isempty(libaf) || error("ArrayFire library cannot be found.")
