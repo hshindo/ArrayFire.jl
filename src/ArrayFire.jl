@@ -1,6 +1,8 @@
 module ArrayFire
 
-export AFArray
+typealias AF ArrayFire
+
+export AFArray, AF
 # array.jl
 export to_host, cast, lookup, available_backends, set_backend, jl_size
 export device_ptr, unlock_device_ptr
@@ -47,4 +49,4 @@ function checkerror(err)
   end
 end
 
-end
+end # ArrayFire

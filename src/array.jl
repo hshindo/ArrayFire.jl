@@ -103,6 +103,45 @@ function retain(in::AFArray)
   AFArray(out[1])
 end
 
+function fill{T}(value::T, dims)
+  out = af_array[0]
+  dims = dim_t[dims...]
+  af_constant(out, value, length(dims), dims, aftype(T))
+  AFArray(out[1])
+end
+
+zeros{T}(::Type{T}, dims) = fill(T(0), dims)
+zeros{T}(::Type{T}, dims...) = fill(T(0), dims)
+zeros(in::AFArray) = zeros(eltype(in), size(in))
+
+ones{T}(::Type{T}, dims) = fill(T(1), dims)
+ones{T}(::Type{T}, dims...) = fill(T(1), dims)
+ones(in::AFArray) = ones(eltype(in), size(in))
+
+function range{T,N}(::Type{T}, dims::NTuple{N,Int}, seq_dim::Int=0)
+  out = af_array[0]
+  dims = dim_t[dims...]
+  af_range(out, N, dims, seq_dim-1, aftype(T))
+  AFArray(out[1])
+end
+range{T}(::Type{T}, dims::Int...) = range(T, dims)
+
+function rand{T}(::Type{T}, dims)
+  out = af_array[0]
+  dims = dim_t[dims...]
+  af_randu(out, length(dims), dims, aftype(T))
+  AFArray(out[1])
+end
+rand{T}(::Type{T}, dims...) = rand(T, dims)
+
+function randn{T}(::Type{T}, dims)
+  out = af_array[0]
+  dims = dim_t[dims...]
+  af_randn(out, length(dims), dims, aftype(T))
+  AFArray(out[1])
+end
+randn{T}(::Type{T}, dims...) = randn(T, dims)
+
 #af_write_array
 
 #function eye{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int})
@@ -120,45 +159,6 @@ end
 #  af_iota(out, N, dims, N, tdims, aftype(T))
 #  AFArray(out[1])
 #end
-
-function Base.fill(::Type{AFArray}, value, dims)
-  out = af_array[0]
-  dims = dim_t[dims...]
-  af_constant(out, value, length(dims), dims, aftype(typeof(value)))
-  AFArray(out[1])
-end
-
-Base.zeros{T}(::Type{AFArray{T}}, dims) = fill(AFArray, T(0), dims)
-Base.zeros{T}(::Type{AFArray{T}}, dims...) = fill(AFArray, T(0), dims)
-Base.zeros(in::AFArray) = zeros(AFArray{eltype(in)}, size(in))
-
-Base.ones{T}(::Type{AFArray{T}}, dims) = fill(AFArray, T(1), dims)
-Base.ones{T}(::Type{AFArray{T}}, dims...) = fill(AFArray, T(1), dims)
-Base.ones(in::AFArray) = ones(AFArray{eltype(in)}, size(in))
-
-function Base.range{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, seq_dim::Int=0)
-  out = af_array[0]
-  dims = dim_t[dims...]
-  af_range(out, N, dims, seq_dim-1, aftype(T))
-  AFArray(out[1])
-end
-Base.range{T}(::Type{AFArray{T}}, dims::Int...) = range(AFArray{T}, dims)
-
-function Base.rand{T}(::Type{AFArray{T}}, dims)
-  out = af_array[0]
-  dims = dim_t[dims...]
-  af_randu(out, length(dims), dims, aftype(T))
-  AFArray(out[1])
-end
-Base.rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
-
-function Base.randn{T}(::Type{AFArray{T}}, dims)
-  out = af_array[0]
-  dims = dim_t[dims...]
-  af_randn(out, length(dims), dims, aftype(T))
-  AFArray(out[1])
-end
-Base.randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
 
 function cast{T}(in::AFArray, ::Type{T})
   out = af_array[0]
@@ -231,7 +231,9 @@ function set_backend(str::ASCIIString)
     b = AF_BACKEND_CUDA
   elseif str == "opencl"
     b = AF_BACKEND_OPENCL
-  else throw("No backend: $(str)")
+  else
+    throw("No backend: $(str)")
+  end
   af_set_backend(b)
 end
 
