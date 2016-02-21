@@ -3,7 +3,7 @@ type AFArray
 
   function AFArray(ptr)
     a = new(ptr)
-    finalizer(a, release)
+    finalizable() && finalizer(a, release)
     a
   end
 end
@@ -128,37 +128,37 @@ function Base.fill(::Type{AFArray}, value, dims)
   AFArray(out[1])
 end
 
-Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims) = fill(AFArray, T(0), dims)
-Base.zeros{T}(::Type{AFArray}, ::Type{T}, dims...) = fill(AFArray, T(0), dims)
-Base.zeros(in::AFArray) = zeros(AFArray, eltype(in), size(in))
+Base.zeros{T}(::Type{AFArray{T}}, dims) = fill(AFArray, T(0), dims)
+Base.zeros{T}(::Type{AFArray{T}}, dims...) = fill(AFArray, T(0), dims)
+Base.zeros(in::AFArray) = zeros(AFArray{eltype(in)}, size(in))
 
-Base.ones{T}(::Type{AFArray}, ::Type{T}, dims) = fill(AFArray, T(1), dims)
-Base.ones{T}(::Type{AFArray}, ::Type{T}, dims...) = fill(AFArray, T(1), dims)
-Base.ones(in::AFArray) = ones(AFArray, eltype(in), size(in))
+Base.ones{T}(::Type{AFArray{T}}, dims) = fill(AFArray, T(1), dims)
+Base.ones{T}(::Type{AFArray{T}}, dims...) = fill(AFArray, T(1), dims)
+Base.ones(in::AFArray) = ones(AFArray{eltype(in)}, size(in))
 
-function Base.range{T,N}(::Type{AFArray}, ::Type{T}, dims::NTuple{N,Int}, seq_dim::Int=0)
+function Base.range{T,N}(::Type{AFArray{T}}, dims::NTuple{N,Int}, seq_dim::Int=0)
   out = af_array[0]
   dims = dim_t[dims...]
   af_range(out, N, dims, seq_dim-1, aftype(T))
   AFArray(out[1])
 end
-Base.range{T}(::Type{AFArray}, ::Type{T}, dims::Int...) = range(AFArray, T, dims)
+Base.range{T}(::Type{AFArray{T}}, dims::Int...) = range(AFArray{T}, dims)
 
-function Base.rand{T}(::Type{AFArray}, ::Type{T}, dims)
+function Base.rand{T}(::Type{AFArray{T}}, dims)
   out = af_array[0]
   dims = dim_t[dims...]
   af_randu(out, length(dims), dims, aftype(T))
   AFArray(out[1])
 end
-Base.rand{T}(::Type{AFArray}, ::Type{T}, dims...) = rand(AFArray, T, dims)
+Base.rand{T}(::Type{AFArray{T}}, dims...) = rand(AFArray{T}, dims)
 
-function Base.randn{T}(::Type{AFArray}, ::Type{T}, dims)
+function Base.randn{T}(::Type{AFArray{T}}, dims)
   out = af_array[0]
   dims = dim_t[dims...]
   af_randn(out, length(dims), dims, aftype(T))
   AFArray(out[1])
 end
-Base.randn{T}(::Type{AFArray}, ::Type{T}, dims...) = randn(AFArray, T, dims)
+Base.randn{T}(::Type{AFArray{T}}, dims...) = randn(AFArray{T}, dims)
 
 function cast{T}(in::AFArray, ::Type{T})
   out = af_array[0]
@@ -218,17 +218,21 @@ function available_backends()
   p = Cint[0]
   af_get_available_backends(p)
   v = Int(p[1])
-  cpu = (v & AF_BACKEND_CPU) != 0
-  cuda = (v & AF_BACKEND_CUDA) != 0
-  opencl = (v & AF_BACKEND_OPENCL) != 0
+  cpu = (v & AF_BACKEND_CPU) == 0 ? "off" : "on"
+  cuda = (v & AF_BACKEND_CUDA) == 0 ? "off" : "on"
+  opencl = (v & AF_BACKEND_OPENCL) == 0 ? "off" : "on"
   "cpu:$(cpu), cuda:$(cuda), opencl:$(opencl)"
 end
 
-function setbackend(backend::ASCIIString)
-  be =
-    backend == "cpu" ? AF_BACKEND_CPU :
-    backend == "cuda" ? AF_BACKEND_CUDA : AF_BACKEND_OPENCL
-  af_set_backend(be)
+function set_backend(str::ASCIIString)
+  if str == "cpu"
+    b = AF_BACKEND_CPU
+  elseif str == "cuda"
+    b = AF_BACKEND_CUDA
+  elseif str == "opencl"
+    b = AF_BACKEND_OPENCL
+  else throw("No backend: $(str)")
+  af_set_backend(b)
 end
 
 function lookup(in::AFArray, indices::AFArray, dim::Int)

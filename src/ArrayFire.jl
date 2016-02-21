@@ -2,7 +2,7 @@ module ArrayFire
 
 export AFArray
 # array.jl
-export to_host, cast, lookup, available_backends, setbackend, jl_size
+export to_host, cast, lookup, available_backends, set_backend, jl_size
 export device_ptr, unlock_device_ptr
 # image.jl
 export unwrap, wrap
@@ -15,6 +15,10 @@ end : begin
   const libaf = Libdl.find_library(["libaf"])
 end)
 #!isempty(libaf) || error("ArrayFire library cannot be found.")
+
+const af_fin = [true]
+finalizable() = af_fin[1]
+set_finalizable(b::Bool) = af_fin[1] = b
 
 include("types.jl")
 include("libaf.jl")
