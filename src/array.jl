@@ -214,29 +214,6 @@ function Base.transpose(in::AFArray; conjugate::Bool=false)
   AFArray(out[1])
 end
 
-function available_backends()
-  p = Cint[0]
-  af_get_available_backends(p)
-  v = Int(p[1])
-  cpu = (v & AF_BACKEND_CPU) == 0 ? "off" : "on"
-  cuda = (v & AF_BACKEND_CUDA) == 0 ? "off" : "on"
-  opencl = (v & AF_BACKEND_OPENCL) == 0 ? "off" : "on"
-  "cpu:$(cpu), cuda:$(cuda), opencl:$(opencl)"
-end
-
-function set_backend(str::ASCIIString)
-  if str == "cpu"
-    b = AF_BACKEND_CPU
-  elseif str == "cuda"
-    b = AF_BACKEND_CUDA
-  elseif str == "opencl"
-    b = AF_BACKEND_OPENCL
-  else
-    throw("No backend: $(str)")
-  end
-  af_set_backend(b)
-end
-
 function lookup(in::AFArray, indices::AFArray, dim::Int)
   out = af_array[0]
   af_lookup(out, in, indices, dim-1)

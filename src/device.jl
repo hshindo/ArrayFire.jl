@@ -42,7 +42,7 @@ function device_info()
   toolkit = UInt8[0]
   compute = UInt8[0]
   af_device_info(name, platform, toolkit, compute)
-  bytestring(name[1])
+  bytestring(name), bytestring(platform)
   #error("Not implemented yet.")
 end
 
@@ -55,3 +55,26 @@ end
 setdevice(device::Int) = af_set_device(device)
 
 sync(device::Int=-1) = af_sync(device)
+
+function available_backends()
+  p = Cint[0]
+  af_get_available_backends(p)
+  v = Int(p[1])
+  cpu = (v & AF_BACKEND_CPU) == 0 ? "off" : "on"
+  cuda = (v & AF_BACKEND_CUDA) == 0 ? "off" : "on"
+  opencl = (v & AF_BACKEND_OPENCL) == 0 ? "off" : "on"
+  "cpu:$(cpu), cuda:$(cuda), opencl:$(opencl)"
+end
+
+function set_backend(str::ASCIIString)
+  if str == "cpu"
+    b = AF_BACKEND_CPU
+  elseif str == "cuda"
+    b = AF_BACKEND_CUDA
+  elseif str == "opencl"
+    b = AF_BACKEND_OPENCL
+  else
+    throw("No backend: $(str)")
+  end
+  af_set_backend(b)
+end
